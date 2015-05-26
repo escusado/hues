@@ -1,0 +1,8 @@
+{
+  "plugins": ["plugins/markdown"],
+  "opts": {
+    "destination": "docs",
+    "readme": "README.md",
+    "recurse": true
+  }
+}

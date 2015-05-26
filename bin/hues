@@ -1,0 +1,166 @@
+#!/usr/bin/env node
+
+require('neon');
+
+var ref, appData,
+    fs = require('fs'),
+    Firebase = require('firebase'),
+    Hue = require('philips-hue');
+    hue = new Hue();
+    configData = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')),
+
+    TwitterClient = require('../lib/twitter_client'),
+    Matcher = require('../lib/matcher');
+
+var BOT_COMMAND = 'room';
+
+/**
+ * Hues a bot that matches people with stuff and tweets that!
+ *
+ *  #Usage
+ *  Hues.tweetMatches(configData);
+ *
+ */
+Class('Hues')({
+
+  /**
+   * Kickstarts the matching process using the `Matcher` and tweet the results
+   * using the TwitterClient
+   *
+   * @function tweetMatches
+   * @memberof Hues
+   * @argument {object} [config] config object
+   *
+   */
+  tweetMatches : function tweetMatches (config){
+
+    //connect to firebase
+    ref = new Firebase(config.firebaseUrl);
+
+    //get data
+    ref.once("value", function (snapshot) {
+      //save into global variable
+      appData = snapshot.val() || {};
+
+      //init in case on new db
+      appData.commandQueue = appData.commandQueue || [];
+      appData.mentions = appData.mentions || [];
+
+      //kickstart the process
+      this._process();
+
+    }.bind(this), function (errorObject) {
+      console.log("The read failed: " + errorObject.code);
+    });
+
+  },
+
+  /**
+   * Verify for valid mentions and users, save already processed mentions and
+   * keep only current unmatched users (allow multiple matches)
+   *
+   * @function _process
+   * @memberof Hues
+   *
+   */
+  _process : function _process(){
+
+    //get mentions from timeline
+    TwitterClient.getMentions(function(mentions){
+
+      //iterate over them
+      mentions.forEach(function mentionInterator (mention, index) {
+        var noCommandPresent = true, alreadyUnmatchedUser;
+
+        //filter mentions only with the desired command
+        if (mention.entities.hashtags.length) {
+          mention.entities.hashtags.forEach(function(hashtag){
+            if(hashtag.text === BOT_COMMAND){
+              noCommandPresent = false;
+            }
+          })
+        }
+
+        //no command? skip mention
+        if(noCommandPresent){
+          return;
+        }
+
+        if(appData.mentions.indexOf(mention.id) > -1){
+          return;
+        }
+
+        //save valid mention
+        appData.commandQueue.push(mention);
+        appData.mentions.push(mention.id);
+
+      }.bind(this));
+
+      //well run it
+      this._runCommands();
+
+    }.bind(this));
+  },
+
+  /**
+   * Calls the Matcher lib
+   *
+   * @function _runCommands
+   * @memberof Hues
+   *
+   */
+  _runCommands : function _runCommands () {
+
+    // this.newMentions.forEach(function(mention){
+    //   var hashTags = mention.entities.hashtags;
+
+    //   hashTags.forEach(function(){
+
+    //   });
+
+    //   appData.mentions.push(mention.id)
+    // });
+
+    // hue.bridge = "192.168.100.11";  // from hue.getBridges()
+    // hue.username = "newdeveloper"; // from hue.auth()
+
+    // var state = {bri: 255, sat: 255, hue: 50000, effect:'none'};
+
+    // hue.light(1).setState(state);
+
+    ref.set(appData, function(){
+      // success? exit!
+      console.log('>>>>>>', appData.mentions);
+      process.exit(0);
+    });
+
+    // //recursive tweeting
+    // var doTweet = function doTweet(tweet){
+    //   TwitterClient.post(tweet, function(){
+    //     //check if any tweets letf
+    //     if(tweets.length){
+    //       doTweet(tweets.pop());
+    //     }else{
+    //       //finished? well, save the data
+    //       ref.set(appData, function(){
+    //         // success? exit!
+    //         process.exit(0);
+    //       });
+    //     }
+    //   }.bind(this));
+    // }.bind(this);
+
+    // //only if matches happened
+    // if(tweets.length){
+    //   doTweet(tweets.pop());
+    // }else{
+    //   console.log('> sorry no tweets');
+    //   process.exit(0);
+    // }
+
+  }
+
+});
+
+Hues.tweetMatches(configData);
+

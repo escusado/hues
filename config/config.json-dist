@@ -1,0 +1,9 @@
+{
+  "twitterConsumerKey" : "",
+  "twitterConsumerSecret" : "",
+  "clientKey": "",
+  "clientSecret": "",
+
+  "firebaseUrl" : "",
+  "firebaseToken" : ""
+}

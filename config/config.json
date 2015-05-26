@@ -1,0 +1,9 @@
+{
+  "twitterConsumerKey" : "vmclCCGGHlZQ4KIhIkaOFydg0",
+  "twitterConsumerSecret" : "TZm0XCXw56VPSXhHSQ6a4HWrMRZR6fyKvdrTMHQ5np7bdEd6HX",
+  "clientKey": "3292285145-jMiUPBoRj9ykGmcW6D4HMOSZ79r7beItFUATbLj",
+  "clientSecret": "t638QX9UpRIXIXJns5Z7PuvtJYS5wVmBbNop74eIJaN4C",
+
+  "firebaseUrl" : "https://fortunabot.firebaseio.com/hues",
+  "firebaseToken" : "RPp1o0MfqYxcOg769NjlaTOoI0vbxTGKusPaBzX2"
+}
