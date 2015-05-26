@@ -1,21 +1,15 @@
 require('neon');
 
-require('neon');
-
 var ref, appData,
+    Helpers = require('../lib/helpers'),
+    colorNames = require('../lib/color_names.json'),
     fs = require('fs'),
     Firebase = require('firebase'),
     Hue = require('philips-hue'),
     hue = new Hue(),
     chroma = require('chroma-js'),
     config = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')),
-    colors = {
-      red : {bri: 255, sat: 255, hue: 10000, effect:'none'},
-      blue : {bri: 255, sat: 255, hue: 30000, effect:'none'},
-      green : {bri: 255, sat: 255, hue: 50000, effect:'none'}
-    },
     TwitterClient = require('../lib/twitter_client'),
-    Matcher = require('../lib/matcher'),
     checkTimeout;
 
 var BOT_COMMAND = 'room';
@@ -52,18 +46,33 @@ Class('HueWorker')({
         command.entities.hashtags.forEach(function(hashtag){
           // console.log('>>>>>>', hashtag.text);
           // var color = chroma(hashtag.text);
-          try{
-            var color = chroma('239,247,255'),
-                tweet = '@'+command.user.screen_name+' sup thanks for tha color: '+hashtag.text;
+          // try{
+            console.log('>>>>', hashtag, colorNames[hashtag.text]);
+            if(colorNames[hashtag.text]){
+              var rgb = colorNames[hashtag.text],
+                  color = Helpers.rgb(255, rgb.r, rgb.g, rgb.b);
 
-            console.log('>', color.hsi());
-            console.log('color.rgb()', color.rgb());
-            console.log('color.hsl()', color.hsl());
-            console.log('color.hsv()', color.hsv());
-            console.log('color.lab()', color.lab());
-            console.log('color.lch()', color.lch());
-            console.log('color.gl()', color.gl());
-            console.log('color.num()', color.num());
+              color.effect = 'none';
+
+
+              hue.bridge = "192.168.100.11";
+              hue.username = "newdeveloper";
+              hue.light(1).setState(color);
+
+              console.log('>>>', color);
+            }
+
+            // var color = chroma('239,247,255'),
+            //     tweet = '@'+command.user.screen_name+' sup thanks for tha color: '+hashtag.text;
+
+            // console.log('>', color.hsi());
+            // console.log('color.rgb()', color.rgb());
+            // console.log('color.hsl()', color.hsl());
+            // console.log('color.hsv()', color.hsv());
+            // console.log('color.lab()', color.lab());
+            // console.log('color.lch()', color.lch());
+            // console.log('color.gl()', color.gl());
+            // console.log('color.num()', color.num());
 
 
             // hue.bridge = "192.168.100.11";  // from hue.getBridges()
@@ -83,9 +92,9 @@ Class('HueWorker')({
             //   console.log('> posted:', tweet);
             // }.bind(this));
 
-          }catch(err){
-            // console.log('>', err);
-          }
+          // }catch(err){
+          //   console.log('>', err);
+          // }
           // if(color.hex){
             // console.log('>>>', color.hsv());
           // }
@@ -99,11 +108,15 @@ Class('HueWorker')({
         });
       }
 
-      checkTimeout = setTimeout(HueWorker.fetchQueue.bind(HueWorker), 10000);
+      checkTimeout = setTimeout(HueWorker.fetchQueue.bind(HueWorker), 500);
     });
 
   }
 });
 
 
-checkTimeout = setTimeout(HueWorker.fetchQueue.bind(HueWorker), 10000);
+checkTimeout = setTimeout(HueWorker.fetchQueue.bind(HueWorker), 500);
+
+
+
+

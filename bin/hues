@@ -9,8 +9,7 @@ var ref, appData,
     hue = new Hue();
     configData = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')),
 
-    TwitterClient = require('../lib/twitter_client'),
-    Matcher = require('../lib/matcher');
+    TwitterClient = require('../lib/twitter_client');
 
 var BOT_COMMAND = 'room';
 
@@ -33,7 +32,7 @@ Class('Hues')({
    *
    */
   tweetMatches : function tweetMatches (config){
-
+    console.log('checking...');
     //connect to firebase
     ref = new Firebase(config.firebaseUrl);
 
@@ -131,7 +130,9 @@ Class('Hues')({
     ref.set(appData, function(){
       // success? exit!
       console.log('>>>>>>', appData.mentions);
-      process.exit(0);
+      timeoutCheck = setTimeout(function(){
+        Hues.tweetMatches(configData);
+      }, 10000);
     });
 
     // //recursive tweeting
@@ -162,5 +163,8 @@ Class('Hues')({
 
 });
 
-Hues.tweetMatches(configData);
+timeoutCheck = setTimeout(function(){
+  Hues.tweetMatches(configData);
+}, 0);
+
 
